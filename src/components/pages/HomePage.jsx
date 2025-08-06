@@ -132,15 +132,15 @@ const handleAddToCart = (product) => {
     setPriceRange({ min: 0, max: 3000 });
     setSelectedBrands([]);
     setMinRating(0);
-    setShowInStock(false);
+setShowInStock(false);
     setShowOnSale(false);
     toast.info("All filters cleared");
   };
-};
 
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   
   return (
+    <div className="min-h-screen bg-background">
       <Header
         onSearch={handleSearch}
         cartItemCount={totalCartItems}
