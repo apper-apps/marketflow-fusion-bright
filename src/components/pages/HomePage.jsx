@@ -232,6 +232,8 @@ setShowInStock(false);
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
       />
-    </div>
+</div>
   );
 };
+
+export default HomePage;
