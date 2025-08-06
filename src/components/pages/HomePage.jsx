@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import Header from "@/components/organisms/Header";
-import ProductGrid from "@/components/organisms/ProductGrid";
-import FilterSidebar from "@/components/molecules/CategoryFilter";
-import CartDrawer from "@/components/organisms/CartDrawer";
-import Footer from "@/components/organisms/Footer";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import categoryService from "@/services/api/categoryService";
 import productService from "@/services/api/productService";
-import { toast } from "react-toastify";
+import FilterSidebar from "@/components/molecules/CategoryFilter";
+import Header from "@/components/organisms/Header";
+import ProductGrid from "@/components/organisms/ProductGrid";
+import Footer from "@/components/organisms/Footer";
+import CartDrawer from "@/components/organisms/CartDrawer";
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
@@ -23,7 +23,7 @@ const HomePage = () => {
   const [showOnSale, setShowOnSale] = useState(false);
   const [availableBrands, setAvailableBrands] = useState([]);
   // Load categories
-  useEffect(() => {
+useEffect(() => {
     const loadCategories = async () => {
       try {
         const data = await categoryService.getAll();
@@ -35,7 +35,7 @@ const HomePage = () => {
     loadCategories();
   }, []);
 
-  // Load cart from localStorage on mount
+// Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem("marketflow-cart");
     if (savedCart) {
@@ -136,10 +136,11 @@ const handleAddToCart = (product) => {
     setShowOnSale(false);
     toast.info("All filters cleared");
   };
+};
 
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  
   return (
-    <div className="min-h-screen bg-background">
       <Header
         onSearch={handleSearch}
         cartItemCount={totalCartItems}
@@ -234,5 +235,3 @@ const handleAddToCart = (product) => {
     </div>
   );
 };
-
-export default HomePage;

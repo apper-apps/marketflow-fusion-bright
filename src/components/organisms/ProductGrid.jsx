@@ -16,7 +16,7 @@ const ProductGrid = ({
   showOnSale = false,
   onAddToCart 
 }) => {
-  const [products, setProducts] = useState([]);
+const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -43,7 +43,6 @@ const ProductGrid = ({
     onAddToCart(product);
     toast.success(`${product.title} added to cart!`);
   };
-
 const filteredProducts = products.filter(product => {
     // Search filter
     const matchesSearch = !searchQuery || 

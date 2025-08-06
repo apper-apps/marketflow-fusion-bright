@@ -1,29 +1,120 @@
-import mockProducts from "@/services/mockData/products.json";
+import { toast } from 'react-toastify';
 
 const productService = {
   async getAll() {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...mockProducts];
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "price" } },
+          { field: { Name: "image" } },
+          { field: { Name: "rating" } },
+          { field: { Name: "reviewCount" } },
+          { field: { Name: "inStock" } },
+          { field: { Name: "description" } },
+          { field: { Name: "category" } }
+        ]
+      };
+
+      const response = await apperClient.fetchRecords('product', params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        title: product.title || product.Name || 'Unnamed Product',
+        price: parseFloat(product.price) || 0,
+        image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        category: product.category?.Name || product.category || 'uncategorized',
+        rating: parseFloat(product.rating) || 0,
+        reviewCount: parseInt(product.reviewCount) || 0,
+        inStock: product.inStock === true || product.inStock === 'true',
+        description: product.description || 'No description available'
+      }));
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching products:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return [];
+    }
   },
 
-async getById(id) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const product = mockProducts.find(p => p.Id === parseInt(id));
-    if (!product) {
-      throw new Error("Product not found");
-    }
-    
-    // Return enhanced product data for detail page
-    return { 
-      ...product,
-      detailedDescription: product.description + " This premium product offers exceptional quality and performance, carefully crafted to meet the highest standards. Perfect for both everyday use and special occasions.",
-      specifications: this.getSpecifications(product.category),
-      shippingInfo: {
-        freeShipping: product.price > 50,
-        estimatedDays: product.inStock ? "2-3 business days" : "Currently unavailable"
+  async getById(id) {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "price" } },
+          { field: { Name: "image" } },
+          { field: { Name: "rating" } },
+          { field: { Name: "reviewCount" } },
+          { field: { Name: "inStock" } },
+          { field: { Name: "description" } },
+          { field: { Name: "category" } }
+        ]
+      };
+
+      const response = await apperClient.getRecordById('product', parseInt(id), params);
+      
+      if (!response.success) {
+        throw new Error(response.message || "Product not found");
       }
-    };
+
+      const product = response.data;
+      const transformedProduct = {
+        Id: product.Id,
+        title: product.title || product.Name || 'Unnamed Product',
+        price: parseFloat(product.price) || 0,
+        image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        category: product.category?.Name || product.category || 'uncategorized',
+        rating: parseFloat(product.rating) || 0,
+        reviewCount: parseInt(product.reviewCount) || 0,
+        inStock: product.inStock === true || product.inStock === 'true',
+        description: product.description || 'No description available'
+      };
+
+      // Return enhanced product data for detail page
+      return { 
+        ...transformedProduct,
+        detailedDescription: transformedProduct.description + " This premium product offers exceptional quality and performance, carefully crafted to meet the highest standards. Perfect for both everyday use and special occasions.",
+        specifications: this.getSpecifications(transformedProduct.category),
+        shippingInfo: {
+          freeShipping: transformedProduct.price > 50,
+          estimatedDays: transformedProduct.inStock ? "2-3 business days" : "Currently unavailable"
+        }
+      };
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching product:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      throw error;
+    }
   },
 
   getSpecifications(category) {
@@ -63,59 +154,151 @@ async getById(id) {
   },
 
   async getByCategory(categoryId) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    return mockProducts.filter(p => p.category === categoryId).map(p => ({ ...p }));
+    try {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "price" } },
+          { field: { Name: "image" } },
+          { field: { Name: "rating" } },
+          { field: { Name: "reviewCount" } },
+          { field: { Name: "inStock" } },
+          { field: { Name: "description" } },
+          { field: { Name: "category" } }
+        ],
+        where: [
+          {
+            FieldName: "category",
+            Operator: "EqualTo",
+            Values: [categoryId]
+          }
+        ]
+      };
+
+      const response = await apperClient.fetchRecords('product', params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        title: product.title || product.Name || 'Unnamed Product',
+        price: parseFloat(product.price) || 0,
+        image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        category: product.category?.Name || product.category || 'uncategorized',
+        rating: parseFloat(product.rating) || 0,
+        reviewCount: parseInt(product.reviewCount) || 0,
+        inStock: product.inStock === true || product.inStock === 'true',
+        description: product.description || 'No description available'
+      }));
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching products by category:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return [];
+    }
   },
 
   async search(query) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const searchTerm = query.toLowerCase();
-    return mockProducts
-      .filter(p => 
-        p.title.toLowerCase().includes(searchTerm) ||
-        p.category.toLowerCase().includes(searchTerm)
-      )
-      .map(p => ({ ...p }));
-  },
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
 
-  async create(productData) {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const newId = Math.max(...mockProducts.map(p => p.Id)) + 1;
-    const newProduct = {
-      Id: newId,
-      ...productData,
-      createdAt: new Date().toISOString()
-    };
-    mockProducts.push(newProduct);
-    return { ...newProduct };
-  },
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "price" } },
+          { field: { Name: "image" } },
+          { field: { Name: "rating" } },
+          { field: { Name: "reviewCount" } },
+          { field: { Name: "inStock" } },
+          { field: { Name: "description" } },
+          { field: { Name: "category" } }
+        ],
+        whereGroups: [
+          {
+            operator: "OR",
+            subGroups: [
+              {
+                conditions: [
+                  {
+                    fieldName: "title",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "Name",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "description",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ],
+                operator: "OR"
+              }
+            ]
+          }
+        ]
+      };
 
-  async update(id, productData) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockProducts.findIndex(p => p.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Product not found");
+      const response = await apperClient.fetchRecords('product', params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data.map(product => ({
+        Id: product.Id,
+        title: product.title || product.Name || 'Unnamed Product',
+        price: parseFloat(product.price) || 0,
+        image: product.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop',
+        category: product.category?.Name || product.category || 'uncategorized',
+        rating: parseFloat(product.rating) || 0,
+        reviewCount: parseInt(product.reviewCount) || 0,
+        inStock: product.inStock === true || product.inStock === 'true',
+        description: product.description || 'No description available'
+      }));
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error searching products:", error?.response?.data?.message);
+      } else {
+        console.error(error.message);
+      }
+      return [];
     }
-    
-    mockProducts[index] = {
-      ...mockProducts[index],
-      ...productData,
-      Id: parseInt(id), // Ensure Id stays the same
-      updatedAt: new Date().toISOString()
-    };
-    
-    return { ...mockProducts[index] };
-  },
-
-  async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    const index = mockProducts.findIndex(p => p.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Product not found");
-    }
-    
-    const deletedProduct = mockProducts.splice(index, 1)[0];
-    return { ...deletedProduct };
   }
 };
 
